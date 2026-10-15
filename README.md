@@ -11,27 +11,29 @@ It started as a fork of [shubhamshnd/Open-Cluely](https://github.com/shubhamshnd
 ## What it does
 
 - **Listens to the interviewer.** System audio is transcribed live with AssemblyAI. The newest sentence is shown on one caption line.
-- **Can listen to you too.** Turn on the 麥克風 button and what you say is transcribed as well, so answers continue from what you actually told the interviewer. Correctness still comes first: if you said something wrong, the answer gives the right version with a short phrase for correcting yourself.
+- **Can listen to you too.** Turn on the **Mic** button and what you say is transcribed as well, so answers continue from what you actually told the interviewer. Correctness still comes first: if you said something wrong, the answer gives the right version with a short phrase for correcting yourself.
 - **Answers on a hotkey or automatically.** Press a key to answer what was just said, or turn on Auto and an answer starts as soon as the interviewer finishes a question.
 - **Solves what is on the screen.** One key captures the screen and answers the problem on it. Another lets you drag over just the part you want it to look at.
 - **English or Chinese, your choice.** The mode steers both transcription and the answer language. Chinese mode answers in Traditional Chinese with Taiwan wording and keeps technical terms in English.
 - **Remembers the interview.** Every request carries the whole conversation, including earlier answers, and the model is told to stay consistent with them.
 - **Knows your background.** Point it at folders of your own project write-ups and reports, and paste a resume. Experience questions are answered from those records only.
-- **Knows the job.** Paste the job description into the 這次面試 box before the interview. Claude reads it once, the box shows the company, the role, and the skills it needs most, and every answer leans on experience that shows those skills.
+- **Knows the job.** Paste the job description into the **This interview** box before the interview. Claude reads it once, the box shows the company, the role, and the skills it needs most, and every answer leans on experience that shows those skills.
 - **Hidden from screen capture.** The window uses `BrowserWindow.setContentProtection`, so screen sharing and screenshots do not include it.
 
 ## The window
 
+The window's labels are in Traditional Chinese. This README refers to them by their English meaning.
+
 ```text
-+------------------------------------------------+
-| * 聆聽中  [中] [Auto] [* 麥克風]     設定   x  |   listening state, language, auto answer, microphone
-+------------------------------------------------+
-| 面試官  可以說明你怎麼設計 rate limiter？        |   what the interviewer just said
-+------------------------------------------------+
-| Auto  可以說明你怎麼設計 rate limiter？          |
-| 我會用 token bucket，每個 user 一個桶…          |   answers, newest at the bottom
-|                           問完後 1.2s 出字      |
-+------------------------------------------------+
++--------------------------------------------------+
+| * Listening  [EN] [Auto] [* Mic]   Settings   x  |   listening state, language, auto answer, microphone
++--------------------------------------------------+
+| Interviewer  How do you design a rate limiter?   |   what the interviewer just said
++--------------------------------------------------+
+| Auto  How do you design a rate limiter?          |
+| I'd use a token bucket, one bucket per user...   |   answers, newest at the bottom
+|                     first word 1.2s after asking |
++--------------------------------------------------+
 ```
 
 Each answer card shows how long the first word took, so you can see the real latency. A column on the right lists the shortcuts; it is filled from `src/config.js`, so it always matches the keys that are actually registered.
@@ -42,7 +44,7 @@ The caption line only shows the latest sentence. The full transcript is open bel
 
 ### The job you are interviewing for
 
-The **這次面試** box at the top of the right column starts empty each time the app opens. Paste the job description into it and press **讓 AI 讀**. Claude Haiku reads it in a second or two, and the box then shows the company and the role with three or four skills the role needs most. Press **更換** to edit it or paste another one.
+The **This interview** box at the top of the right column starts empty each time the app opens. Paste the job description into it and press **Let AI read**. Claude Haiku reads it in a second or two, and the box then shows the company and the role with three or four skills the role needs most. Press **Change** to edit it or paste another one.
 
 - Every answer gets the full job description and those skills, and is told to lead with the experience that shows them and to use the job description's own terms. It is still told never to claim experience your records do not show.
 - The job description is kept in memory only: it is not saved, and closing the app clears it. Clearing the conversation (`Alt+Shift+C`) keeps it.
@@ -52,16 +54,16 @@ To check recognition before an interview, play a recording you know (a past inte
 
 ### Your microphone
 
-The **麥克風** button in the top bar decides whether your own voice is used. When it is lit, your microphone is transcribed whenever listening is on, and its dot turns green while that is happening. The setting is saved.
+The **Mic** button in the top bar decides whether your own voice is used. When it is lit, your microphone is transcribed whenever listening is on, and its dot turns green while that is happening. The setting is saved.
 
-Choose which microphone in **設定 → 麥克風輸入**: the Windows default, or any connected microphone such as a headset. When recording starts, a notice names the microphone in use. If the chosen one is not connected, the Windows default is used and a notice says so. Changing it while listening switches at once.
+Choose which microphone in **Settings → Microphone input**: the Windows default, or any connected microphone such as a headset. When recording starts, a notice names the microphone in use. If the chosen one is not connected, the Windows default is used and a notice says so. Changing it while listening switches at once.
 
-To check a microphone before an interview, press **測試** next to the list and speak: five bars, rising left to right like a signal icon, show how loud it hears you. Normal speech should light three to five; if they stay dark, pick another microphone. While testing, choosing another microphone switches the bars to it. The test opens the microphone only until you press **停止** or close Settings.
+To check a microphone before an interview, press **Test** next to the list and speak: five bars, rising left to right like a signal icon, show how loud it hears you. Normal speech should light three to five; if they stay dark, pick another microphone. While testing, choosing another microphone switches the bars to it. The test opens the microphone only until you press **Stop** or close Settings.
 
 - What you said goes into the next request, in order with what the interviewer said (`Candidate:` and `Interviewer:` lines). The model continues from what you already said instead of repeating it, and answers follow-ups about your actual words.
 - Correctness comes before consistency. If you said something technically wrong, or something that contradicts your experience documents, the answer does not build on it: it gives the correct version and opens with a short phrase you can use to correct yourself.
 - Your speech never starts an answer by itself; Auto still waits for the interviewer.
-- The full transcript (`Alt+Shift+R`) shows your lines as 「我：…」, so you can check what was picked up.
+- The full transcript (`Alt+Shift+R`) marks your lines with "Me:", so you can check what was picked up.
 
 Things to know:
 
@@ -120,7 +122,7 @@ Copy-Item .env.example .env
 npm start
 ```
 
-Open **設定** in the window and enter both API keys, your programming language, and optionally your resume. Paste the job description into the 這次面試 box on the right. Do this before the interview (see [While sharing your screen](#while-sharing-your-screen)).
+Open **Settings** in the window and enter both API keys, your programming language, and optionally your resume. Paste the job description into the **This interview** box on the right. Do this before the interview (see [While sharing your screen](#while-sharing-your-screen)).
 
 Useful variants:
 
@@ -136,7 +138,7 @@ npm test               # unit tests
 
 [`src/config.js`](./src/config.js) is the single place for:
 
-- `CLAUDE_PROFILES`: which Claude model answers spoken questions (`voice`) and screen problems (`screen`), with their thinking and effort settings. Spoken questions use Claude Haiku 5.5 with thinking off for the fastest first word. Screen problems use Claude Opus 5.5, which always thinks first, so expect a "思考中…" pause.
+- `CLAUDE_PROFILES`: which Claude model answers spoken questions (`voice`) and screen problems (`screen`), with their thinking and effort settings. Spoken questions use Claude Haiku 5.5 with thinking off for the fastest first word. Screen problems use Claude Opus 5.5, which always thinks first, so expect a "Thinking..." pause.
 - `INTERVIEW_LANGUAGES`: the language modes and the AssemblyAI `language_codes` each one sends. Chinese mode sends `zh` and `en` because technical Mandarin is full of English terms; change this line if English words get transcribed badly.
 - `AUTO_ANSWER`: how long Auto waits after the interviewer stops, and the minimum gap between automatic answers.
 - Programming languages, screenshot size, and keyboard shortcuts.
@@ -160,7 +162,7 @@ npm test               # unit tests
 
 ## Experience folders
 
-In **設定 → 經歷資料夾**, list one folder per line. Everything under those folders is loaded and sent with every spoken question, so answers about your own work can use your real details.
+In **Settings → Experience folders**, list one folder per line. Everything under those folders is loaded and sent with every spoken question, so answers about your own work can use your real details.
 
 - `.md`, `.markdown`, and `.txt` files are loaded whole.
 - Each PDF is turned into short notes by Claude Opus 5.5, once. The notes add what the PDF contains beyond the text files in the same folder. They are cached in `cache/knowledge/`, keyed by the PDF's content, so a PDF is only processed again if it changes. In one run of seven PDFs (65 pages) this cost $1.25 in total, between $0.07 and $0.25 per file.
