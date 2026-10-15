@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>Select area</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-user-select: none;
+      user-select: none;
+      /* The pointer keeps its normal shape: viewers of a shared screen see the
+         cursor, and a crosshair would show that something is being selected. */
+      cursor: default !important;
+    }
+
+    html,
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: transparent;
+    }
+
+    /* Dims the whole screen until a drag starts. */
+    body {
+      background: rgba(0, 0, 0, 0.32);
+      font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+    }
+
+    /* While dragging, the dimming comes from the box's own shadow instead, so
+       the selected area shows through undimmed. The body keeps a trace of
+       colour so it still receives the mouse. */
+    body.dragging {
+      background: rgba(0, 0, 0, 0.01);
+    }
+
+    #box {
+      position: fixed;
+      display: none;
+      border: 2px solid #5b9dff;
+      box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.32);
+    }
+
+    body.dragging #box {
+      display: block;
+    }
+
+    #hint {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 6px 16px;
+      border-radius: 16px;
+      background: rgba(18, 19, 24, 0.92);
+      color: #f2f3f5;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    body.dragging #hint {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="hint">拖曳選取要截的範圍　·　Esc 或滑鼠右鍵取消</div>
+  <div id="box"></div>
+  <script src="select.js"></script>
+</body>
+</html>

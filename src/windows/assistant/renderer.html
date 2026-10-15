@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Assistant</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- No element here uses a title attribute: a native tooltip is a separate
+       OS window, which screen capture can still see. -->
+  <div id="app" class="glass-container">
+    <div class="window-resize-handle resize-handle-n" data-resize-handle="n" aria-hidden="true"></div>
+    <div class="window-resize-handle resize-handle-e" data-resize-handle="e" aria-hidden="true"></div>
+    <div class="window-resize-handle resize-handle-s" data-resize-handle="s" aria-hidden="true"></div>
+    <div class="window-resize-handle resize-handle-w" data-resize-handle="w" aria-hidden="true"></div>
+    <div class="window-resize-handle resize-handle-ne" data-resize-handle="ne" aria-hidden="true"></div>
+    <div class="window-resize-handle resize-handle-se" data-resize-handle="se" aria-hidden="true"></div>
+    <div class="window-resize-handle resize-handle-sw" data-resize-handle="sw" aria-hidden="true"></div>
+    <div class="window-resize-handle resize-handle-nw" data-resize-handle="nw" aria-hidden="true"></div>
+
+    <!-- Top bar; the empty space in it drags the window -->
+    <header class="top-bar">
+      <button id="listen-btn" class="chip listen-chip" type="button" aria-label="開始或停止聆聽">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="listen-label">未聆聽</span>
+      </button>
+      <button id="language-btn" class="chip" type="button" aria-label="切換面試語言">EN</button>
+      <button id="auto-btn" class="chip" type="button" aria-pressed="false" aria-label="切換自動回答">Auto</button>
+      <!-- Lit: your microphone is used while listening. Green dot: it is being transcribed now. -->
+      <button id="mic-btn" class="chip listen-chip" type="button" aria-pressed="false" aria-label="收錄或不收錄你的麥克風">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>麥克風</span>
+      </button>
+      <span id="notice" class="notice" role="status"></span>
+      <button id="settings-btn" class="chip" type="button">設定</button>
+      <button id="close-btn" class="chip close-chip" type="button" aria-label="關閉程式">&times;</button>
+    </header>
+
+    <div class="body-row">
+      <div class="main-column">
+        <!-- What the interviewer just said. Clicking it opens the full transcript. -->
+        <div id="caption-row" class="caption-row" role="button" aria-expanded="false" aria-label="展開或收合逐字稿">
+          <span class="caption-label">面試官</span>
+          <span id="caption-text" class="caption-text caption-empty">開始聆聽後，這裡會顯示面試官剛講的話</span>
+        </div>
+
+        <!-- Everything heard so far, for checking the transcription -->
+        <div id="transcript-panel" class="transcript-panel hidden" aria-label="逐字稿"></div>
+
+        <!-- Answers, newest at the bottom -->
+        <main id="answers" class="answers">
+          <div id="empty-hint" class="empty-hint">
+            <p><kbd id="hint-answer">Alt+Shift+A</kbd> 回答面試官剛講的話</p>
+            <p><kbd id="hint-screen">Alt+Shift+S</kbd> 看螢幕解題</p>
+          </div>
+        </main>
+      </div>
+
+      <!-- Right column: the job being interviewed for, then the shortcut reference -->
+      <div class="side-column">
+        <section id="job-brief" class="job-brief" aria-label="這次面試"></section>
+        <aside id="shortcut-sidebar" class="shortcut-sidebar" aria-label="快捷鍵"></aside>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <section id="settings-panel" class="settings-panel hidden" aria-label="設定">
+      <div class="settings-header">
+        <span class="settings-title">設定</span>
+        <button id="close-settings-btn" class="chip" type="button">關閉</button>
+      </div>
+      <div class="settings-body">
+        <div class="settings-group">
+          <label class="settings-label" for="setting-anthropic-key">Anthropic API key</label>
+          <input type="password" id="setting-anthropic-key" class="settings-input" autocomplete="off" spellcheck="false" />
+          <div id="setting-model-info" class="settings-helper-text"></div>
+        </div>
+        <div class="settings-group">
+          <label class="settings-label" for="setting-assembly-key">AssemblyAI API key</label>
+          <input type="password" id="setting-assembly-key" class="settings-input" autocomplete="off" spellcheck="false" />
+          <div class="settings-helper-text">用來把面試官的聲音轉成文字。</div>
+        </div>
+        <div class="settings-group">
+          <div class="settings-label-row">
+            <span class="settings-label">麥克風輸入</span>
+            <!-- Five bars, low to high, that move with the selected microphone while testing -->
+            <span class="mic-test">
+              <span id="setting-mic-meter" class="mic-meter" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <button id="setting-mic-test" class="choice-chip" type="button" aria-pressed="false">測試</button>
+            </span>
+          </div>
+          <div id="setting-mic-devices" class="choice-chips device-chips"></div>
+          <div id="setting-mic-note" class="settings-helper-text"></div>
+          <div class="settings-helper-text">頂部「麥克風」開啟時，開始聆聽後會用這支麥克風收你的聲音。</div>
+        </div>
+        <div class="settings-group">
+          <span class="settings-label">程式語言</span>
+          <div id="setting-programming-languages" class="choice-chips"></div>
+        </div>
+        <div class="settings-group">
+          <label class="settings-label" for="setting-resume">履歷</label>
+          <textarea id="setting-resume" class="settings-input settings-textarea" rows="5" maxlength="8000" spellcheck="false"></textarea>
+          <div class="settings-helper-text">貼上純文字。行為題只會用這裡寫到的經歷。</div>
+        </div>
+        <div class="settings-group">
+          <label class="settings-label" for="setting-knowledge-folders">經歷資料夾</label>
+          <textarea id="setting-knowledge-folders" class="settings-input settings-textarea" rows="3" spellcheck="false" placeholder="每行一個資料夾路徑"></textarea>
+          <div id="setting-knowledge-status" class="settings-helper-text"></div>
+          <div class="settings-helper-text">資料夾裡的 .md、.txt 會整份載入。PDF 會先整理成筆記，每份只做一次。</div>
+        </div>
+        <div class="settings-group">
+          <div class="settings-label-row">
+            <label class="settings-label" for="setting-window-opacity">視窗不透明度</label>
+            <span id="setting-window-opacity-value" class="settings-value-chip">10/10</span>
+          </div>
+          <input type="range" id="setting-window-opacity" class="settings-range" min="1" max="10" step="1" value="10" />
+        </div>
+        <div class="settings-group">
+          <label class="settings-check">
+            <input type="checkbox" id="setting-light-theme" />
+            <span>淺色主題</span>
+          </label>
+        </div>
+        <div class="settings-group">
+          <span class="settings-label">熱鍵</span>
+          <div id="settings-shortcuts-list" class="settings-shortcuts-list"></div>
+          <div class="settings-helper-text">要修改請編輯 <code>src/config.js</code>。</div>
+        </div>
+        <button id="save-settings-btn" class="save-settings-btn" type="button">儲存</button>
+      </div>
+    </section>
+
+    <!-- Emergency Overlay -->
+    <div id="emergency-overlay" class="emergency-overlay hidden">
+      <div class="emergency-message">HIDDEN</div>
+    </div>
+  </div>
+
+  <script type="module" src="renderer.js"></script>
+</body>
+</html>
